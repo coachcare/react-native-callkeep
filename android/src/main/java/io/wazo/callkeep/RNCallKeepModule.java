@@ -174,27 +174,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         conn.onAnswer();
     }
 
-    @ReactMethod
-    public void startCall(String uuid, String number, String callerName) {
-        if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
-            return;
-        }
-
-        Log.d(TAG, "startCall number: " + number + ", callerName: " + callerName);
-
-        Bundle extras = new Bundle();
-        Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, number, null);
-
-        Bundle callExtras = new Bundle();
-        callExtras.putString(EXTRA_CALLER_NAME, callerName);
-        callExtras.putString(EXTRA_CALL_UUID, uuid);
-        callExtras.putString(EXTRA_CALL_NUMBER, number);
-
-        extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle);
-        extras.putParcelable(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, callExtras);
-
-        telecomManager.placeCall(uri, extras);
-    }
 
     @ReactMethod
     public void endCall(String uuid) {
@@ -452,8 +431,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         handle = new PhoneAccountHandle(cName, appName);
 
         PhoneAccount.Builder builder = new PhoneAccount.Builder(handle, appName)
-                .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER);
-
+                .setCapabilities(PhoneAccount.CAPABILITY_CONNECTION_MANAGER);
+     
         if (_settings != null && _settings.hasKey("imageName")) {
             int identifier = appContext.getResources().getIdentifier(_settings.getString("imageName"), "drawable", appContext.getPackageName());
             Icon icon = Icon.createWithResource(appContext, identifier);
@@ -462,7 +441,6 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
         PhoneAccount account = builder.build();
 
-        telephonyManager = (TelephonyManager) this.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
         telecomManager = (TelecomManager) this.getAppContext().getSystemService(Context.TELECOM_SERVICE);
 
         telecomManager.registerPhoneAccount(account);
